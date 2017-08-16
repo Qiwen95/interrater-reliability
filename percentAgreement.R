@@ -1,5 +1,14 @@
-calculateAgreement <- function(codes, consensusHeader, agreementHeader, node, vec){
-  # Computes the overall agreement and agreement per node
+# install.packages("irr")
+library(irr)
+
+############################################
+## Functions
+############################################
+percentAgreement <- function(codes, consensusHeader, agreementHeader, node, returnVec){
+  # Computes the overall agreement and agreement per node. Unlike irr agree() function,
+  # will also count the values where a "rater failed to [initially] note the quote."
+  # but where agreement was found in the final stages of coding.
+  #
   # Args:
   #   codes: CSV file of all combined codes from raters
   #   consensusHeader: CSV header name of consensus tag ("Consensus.Tag")
@@ -12,14 +21,30 @@ calculateAgreement <- function(codes, consensusHeader, agreementHeader, node, ve
   subsetCodes <- (codes[codes[consensusHeader] == node, ])
   if (nrow(subsetCodes)!=0){
     nodeTotal <- nrow(subsetCodes)
-    nodeAgreement <- nrow(subsetCodes[subsetCodes[agreementHeader] == "Y",])
+    nodeAgreement <- nrow(subsetCodes[subsetCodes[agreementHeader] == "Y",]) 
+    missedCodes <- nrow(subsetCodes[subsetCodes["Rater.Agreement.Reasons"] == 
+                                      "Rater failed to note the quote.",])
+    if (!is.null(missedCodes)){
+      nodeAgreement <- nodeAgreement+missedCodes
+    }
     print(paste0(node,": ", nodeAgreement,"/", nodeTotal))
-    vec[1] <- vec[1]+nodeAgreement
-    vec[2] <- vec[2]+nodeTotal
+    returnVec[1] <- returnVec[1]+nodeAgreement
+    returnVec[2] <- returnVec[2]+nodeTotal
   }
-  return(vec)
+  return(returnVec)
 }
 
+KrippendorffSetup <- function(codes, rater, nodes, vec_results){
+  #subsetCodes <- codes[rater]
+ # for (node in nodes) {
+ #   vec_results <- c(vec_results, nrow(subsetCodes[]))
+ # }
+  print("here")
+}
+
+############################################
+## Main Execution
+############################################
 vec_results <- c(0,0)
 nodes <- c("A person not on the team made a suggestion",
            "A person not on the team pointed out a concern",
@@ -34,11 +59,35 @@ nodes <- c("A person not on the team made a suggestion",
 
 codes <- read.csv(file="QualitativeCoding.csv", header=TRUE, sep=",")
 
+###
+# Percent Agreement
+###
+cat('\nPercentage Agreement:\n')
 for (node in nodes) {
-  vec_results <- calculateAgreement(codes,"Consensus.Tag", "Rater.Agreement", 
+  vec_results <- percentAgreement(codes,"Consensus.Tag", "Rater.Agreement", 
                                     node, vec_results)
   if(node == tail(nodes, n=1)){
-    print(paste0('Overall agreement: ', vec_results[1], '/', vec_results[2]))
+    cat('Overall agreement: ', vec_results[1], '/', vec_results[2],'\n\n')
   }
 }
+
+###
+# Krippendorff's Alpha
+###
+vec_results <- c(0,0)
+
+rater1 <- table(codes["Paulas.Tag"])
+rater2 <- table(codes["Nidhis.Tag"])
+
+x_kipp <- matrix(data=NA, nrow=2, ncol=length(nodes))
+for(node in nodes){
+  if(node %in% names(rater1)){
+    x_kipp[1, which(nodes==node)] <- rater1[[node]][1]
+  }
+  if (node %in% names(rater2)){
+    x_kipp[2, which(nodes==node)] <- rater2[[node]][1]
+  }
+}
+
+print(kripp.alpha(x_kipp))
 
