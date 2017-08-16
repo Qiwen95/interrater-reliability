@@ -91,3 +91,9 @@ for(node in nodes){
 
 print(kripp.alpha(x_kipp))
 
+###
+# Cohens Kappa
+###
+cat("\n")
+print(kappa2(codes[,c(14,15)]))
+
