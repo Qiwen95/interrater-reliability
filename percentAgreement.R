@@ -14,6 +14,9 @@ nodes <- c("A person not on the team made a suggestion",
 
 codes <- read.csv(file="QualitativeCoding.csv", header=TRUE, sep=",")
 
+## Remove repeated codes for teams (SIGSCE paper)
+codes <- codes[!(codes[,15]=="Y"),]
+
 ###
 # Percent Agreement (use index 16,17 for original tags, to consider possibility
 # of missing a quote)
@@ -58,3 +61,14 @@ print(kripp.alpha(x_kipp))
 cat("\n")
 print(kappa2(codes[,c(18,19)]))
 
+###
+# Summary Frequencies by Interaction Condition
+###
+noInter <- codes[!(codes["End.user.disability.interaction"]=="N"),]
+noInterFreq <- table(noInter["Consensus.Tag"]) 
+noInterFreqPop <- table(noInter["Final.Population.Subcategory"])
+
+yesInter <- codes[!(codes["End.user.disability.interaction"]=="Y"),]
+yesInterFreq <- table(yesInter["Consensus.Tag"]) 
+yesInterFreqPop <- table(yesInter["Final.Population.Subcategory"])
+print(nrow(codes[codes["Rater.Agreement"] == "N"]))
