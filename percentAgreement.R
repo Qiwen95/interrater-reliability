@@ -1,5 +1,27 @@
 # install.packages("irr")
 library(irr)
+########################
+## Functions
+########################
+
+countCodes <- function(codesByCondition, nodeNames){
+  # Generates frequency counts for any given number of codes
+  #
+  # Args:
+  #    codesByCondition: matrix of nxm codes by interaction condition.
+  #    nodeNames: vector of node names used by researchers to categorize the data.
+  overallCodeFreq <- table(codesByCondition["Consensus.Tag"]) 
+  overallSubPopFreq <- table(codesByCondition["Final.Population.Subcategory"])
+  for (node in nodeNames){
+    tempCodeByInter <- (codesByCondition[codesByCondition["Consensus.Tag"] == node ,])
+    subPopByCatFreq <- table(tempCodeByInter["Final.Population.Subcategory"])
+  }
+  return(c(node, overallCodeFreq,overallSubPopFreq, subPopByCatFreq))
+}
+
+########################
+## Main execution
+########################
 
 nodes <- c("A person not on the team made a suggestion",
            "A person not on the team pointed out a concern",
@@ -65,10 +87,7 @@ print(kappa2(codes[,c(18,19)]))
 # Summary Frequencies by Interaction Condition
 ###
 noInter <- codes[!(codes["End.user.disability.interaction"]=="N"),]
-noInterFreq <- table(noInter["Consensus.Tag"]) 
-noInterFreqPop <- table(noInter["Final.Population.Subcategory"])
+noInterFreq <- countCodes(noInter, nodes)
 
 yesInter <- codes[!(codes["End.user.disability.interaction"]=="Y"),]
-yesInterFreq <- table(yesInter["Consensus.Tag"]) 
-yesInterFreqPop <- table(yesInter["Final.Population.Subcategory"])
-print(nrow(codes[codes["Rater.Agreement"] == "N"]))
+yesInterFreq <- countCodes(yesInter, nodes)
