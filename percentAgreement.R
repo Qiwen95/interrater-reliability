@@ -10,7 +10,7 @@ countCodes <- function(codesByCondition, nodeNames){
   # Args:
   #    codesByCondition: matrix of nxm codes by interaction condition.
   #    nodeNames: vector of node names used by researchers to categorize the data.
-  overallCodeFreq <- table(codesByCondition["Consensus.Tag"]) 
+  overallCodeFreq <- table(codesByCondition["Consensus.Tag"])
   overallSubPopFreq <- table(codesByCondition["Final.Population.Subcategory"])
   for (node in nodeNames){
     tempCodeByInter <- (codesByCondition[codesByCondition["Consensus.Tag"] == node ,])
@@ -86,8 +86,8 @@ print(kappa2(codes[,c(18,19)]))
 ###
 # Summary Frequencies by Interaction Condition
 ###
-noInter <- codes[!(codes["End.user.disability.interaction"]=="N"),]
+noInter <- codes[(codes["Exposure.to.an.individual.with.disabilities"]=="N"),]
 noInterFreq <- countCodes(noInter, nodes)
 
-yesInter <- codes[!(codes["End.user.disability.interaction"]=="Y"),]
+yesInter <- codes[(codes["Exposure.to.an.individual.with.disabilities"]=="Y"),]
 yesInterFreq <- countCodes(yesInter, nodes)
