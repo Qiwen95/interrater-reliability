@@ -23,6 +23,7 @@ countCodes <- function(codesByCondition, nodeNames){
 ## Main execution
 ########################
 
+## ALL NODES:
 nodes <- c("A person not on the team made a suggestion",
            "A person not on the team pointed out a concern",
            "Accessibility considered but not addressed",
@@ -36,14 +37,31 @@ nodes <- c("A person not on the team made a suggestion",
 
 codes <- read.csv(file="QualitativeCoding.csv", header=TRUE, sep=",")
 
-## Remove repeated codes for teams (SIGSCE paper)
-codes <- codes[!(codes[,15]=="Y"),]
+########################
+## SIGSCE CUSTOM CODE
+########################
+## Overwrites variables 'codes' and 'nodes'
+
+## Keep non-repeated team codes (SIGSCE paper)
+codes <- codes[(codes[,16]=="N"),]
+
+## Analyze only relevant nodes for SIGSCE paper
+nodes <- c("Accessibility considered but not addressed",
+           "Students explicitly discuss accessibility")
+codes_rater1 <- codes[ codes[, "Paulas.Final.Tag"] %in% nodes, ]
+codes_rater2 <- codes[ codes[, "Nidhis.Final.Tag"] %in% nodes, ]
+codes <- rbind(codes_rater1, codes_rater2)
+codes <- subset(codes, !duplicated(codes[, "Index"])) 
+write.csv(codes, file = "SIGSCEcodes.csv")
+
+## End of SIGSCE customization
+########################
 
 ###
-# Percent Agreement (use index 16,17 for original tags, to consider possibility
+# Percent Agreement (use index 17,18 for original tags, to consider possibility
 # of missing a quote)
 ###
-print(agree(codes[,c(18,19)]))
+print(agree(codes[,c(19,20)]))
 cat("\n")
 
 ## Per category agreement
@@ -65,6 +83,7 @@ vec_results <- c(0,0)
 rater1 <- table(codes["Paulas.Final.Tag"])
 rater2 <- table(codes["Nidhis.Final.Tag"])
 
+## initialize as NA
 x_kipp <- matrix(data=NA, nrow=2, ncol=length(nodes))
 for(node in nodes){
   if(node %in% names(rater1)){
@@ -74,14 +93,13 @@ for(node in nodes){
     x_kipp[2, which(nodes==node)] <- rater2[[node]][1]
   }
 }
-
 print(kripp.alpha(x_kipp))
 
 ###
 # Cohens Kappa
 ###
 cat("\n")
-print(kappa2(codes[,c(18,19)]))
+print(kappa2(codes[,c(19,20)]))
 
 ###
 # Summary Frequencies by Interaction Condition
